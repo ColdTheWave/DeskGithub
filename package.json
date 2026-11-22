@@ -1,0 +1,106 @@
+{
+  "name": "deskgithub",
+  "productName": "DeskGitHub",
+  "version": "1.0.0",
+  "description": "A cross-platform GitHub desktop client with language switch and sign-in to unlock the full version",
+  "author": "DeskGitHub",
+  "license": "MIT",
+  "private": true,
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "postinstall": "node scripts/ensure-electron.mjs",
+    "dev": "concurrently -k -n VITE,ELECTRON -c cyan,magenta \"vite --port 5173 --strictPort\" \"wait-on tcp:5173 && npm run build:electron && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
+    "build:electron": "node scripts/build-electron.mjs",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build && npm run build:electron",
+    "start": "npm run build && electron .",
+    "clean": "node scripts/clean.mjs",
+    "version:set": "node scripts/set-version.mjs",
+    "dist": "npm run build && electron-builder --publish never",
+    "dist:dir": "npm run build && electron-builder --dir --publish never",
+    "dist:mac": "npm run build && electron-builder --mac --x64 --arm64 --publish never",
+    "dist:win": "npm run build && electron-builder --win --x64 --arm64 --publish never",
+    "dist:linux": "npm run build && electron-builder --linux --x64 --arm64 --publish never"
+  },
+  "build": {
+    "appId": "com.deskgithub.app",
+    "productName": "DeskGitHub",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json",
+      "!node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "build/icon.png",
+        "to": "icon.png"
+      }
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "build/icon.png",
+      "darkModeSupport": true,
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "dmg": {
+      "title": "${productName} ${version}"
+    },
+    "win": {
+      "icon": "build/icon.png",
+      "executableName": "DeskGitHub",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "DeskGitHub"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "category": "Development",
+      "synopsis": "A desktop client for GitHub with full-version unlock",
+      "maintainer": "DeskGitHub <dev@deskgithub.app>",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.1",
+    "dompurify": "^3.4.18",
+    "highlight.js": "^11.12.0",
+    "lucide-react": "^1.77.0",
+    "marked": "^18.2.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "concurrently": "^10.0.7",
+    "cross-env": "^10.1.0",
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "wait-on": "^9.5.1"
+  }
+}
