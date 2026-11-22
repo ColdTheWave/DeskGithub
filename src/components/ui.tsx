@@ -23,7 +23,13 @@ export function Avatar({
 }) {
   const src = url || user?.avatar_url || ''
   const label = name || user?.login || '?'
-  if (!src) {
+  const [failed, setFailed] = React.useState(false)
+
+  React.useEffect(() => {
+    setFailed(false)
+  }, [src])
+
+  if (!src || failed) {
     return (
       <span
         className={square ? 'avatar square' : 'avatar'}
@@ -50,6 +56,7 @@ export function Avatar({
       height={size}
       style={{ width: size, height: size }}
       loading="lazy"
+      onError={() => setFailed(true)}
     />
   )
 }

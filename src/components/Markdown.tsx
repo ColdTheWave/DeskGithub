@@ -19,16 +19,35 @@ marked.setOptions({
 
 function rewriteRelativeUrls(html: string, owner?: string, repo?: string, branch?: string) {
   if (!owner || !repo) return html
-  const rawBase = `https://raw.githubusercontent.com/${owner}/${repo}/${branch || 'HEAD'}`
+  const rawBase = branch
+    ? `https://raw.githubusercontent.com/${owner}/${repo}/${branch}`
+    : `https://github.com/${owner}/${repo}/raw/HEAD`
   const repoBase = `https://github.com/${owner}/${repo}`
-  return html.replace(/(<(?:img|source)[^>]*\ssrc=")([^"]+)(")/g, (_match, pre, src, post) => {
-    if (/^(https?:|data:|#)/i.test(src)) return _match
-    const clean = src.replace(/^\.?\//, '')
-    return `${pre}${rawBase}/${clean}${post}`
-  }).replace(/(<a[^>]*\shref=")(?!https?:|#|mailto:)([^"]+)(")/g, (_match, pre, href, post) => {
-    const clean = href.replace(/^\.?\//, '')
-    return `${pre}${repoBase}/blob/${branch || 'HEAD'}/${clean}${post}`
-  })
+  const resolve = (src: string) => {
+    if (/^\/\//.test(src)) return `https:${src}`
+    if (/^(https?:|data:|#)/i.test(src)) return src
+    return `${rawBase}/${src.replace(/^\.?\//, '')}`
+  }
+  return html
+    .replace(/(<(?:img|source)[^>]*\ssrc=")([^"]+)(")/g, (_match, pre, src, post) => {
+      return `${pre}${resolve(src)}${post}`
+    })
+    .replace(/(\s(?:srcset|data-srcset)=")([^"]+)(")/g, (_match, pre, value, post) => {
+      const rewritten = value
+        .split(',')
+        .map((part: string) => {
+          const pieces = part.trim().split(/\s+/)
+          if (!pieces[0]) return part
+          pieces[0] = resolve(pieces[0])
+          return pieces.join(' ')
+        })
+        .join(', ')
+      return `${pre}${rewritten}${post}`
+    })
+    .replace(/(<a[^>]*\shref=")(?!https?:|#|mailto:)([^"]+)(")/g, (_match, pre, href, post) => {
+      const clean = href.replace(/^\.?\//, '')
+      return `${pre}${repoBase}/blob/${branch || 'HEAD'}/${clean}${post}`
+    })
 }
 
 export function Markdown({ markdown, owner, repo, branch, className }: MarkdownProps) {
@@ -39,7 +58,7 @@ export function Markdown({ markdown, owner, repo, branch, className }: MarkdownP
       const raw = marked.parse(markdown || '') as string
       const rewritten = rewriteRelativeUrls(raw, owner, repo, branch)
       return DOMPurify.sanitize(rewritten, {
-        ADD_ATTR: ['target', 'rel', 'align'],
+        ADD_ATTR: ['target', 'rel', 'align', 'srcset'],
         ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|data):|[^a-z]|[a-z+.-]+(?:[^a-z+.:-]|$))/i,
       })
     } catch {

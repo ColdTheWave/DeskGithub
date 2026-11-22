@@ -222,7 +222,7 @@ export function OrgPage({ org }: { org: string }) {
               <LoadingBlock />
             ) : orgReadme.data?.content ? (
               <div className="wiki-body">
-                <Markdown markdown={decodeBase64(orgReadme.data.content)} />
+                <Markdown markdown={decodeBase64(orgReadme.data.content)} owner={org} repo=".github" />
               </div>
             ) : (
               <div className="readme-empty">{L('No organization profile README', '暂无组织简介')}</div>

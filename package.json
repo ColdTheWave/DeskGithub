@@ -1,7 +1,7 @@
 {
   "name": "deskgithub",
   "productName": "DeskGitHub",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A cross-platform GitHub desktop client with language switch and sign-in to unlock the full version",
   "author": "DeskGitHub",
   "license": "MIT",

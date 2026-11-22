@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, Menu, nativeImage, session, shell, Tray } from 'electron'
 import path from 'node:path'
-import { clearSession, startDeviceFlow, pollDeviceFlow } from './auth'
+import { clearSession, startDeviceFlow, pollDeviceFlow, getToken } from './auth'
 import { ghRequest, getSession, type GhRequest } from './github'
 import { applyProxyConfig, applyProxyToSession, getProxyConfig, setProxyConfig, testProxy } from './proxy'
 import { downloadArtifact, fetchRunLogs, uploadReleaseAsset, fetchWikiPage } from './extras'
@@ -49,6 +49,22 @@ function createTray() {
       mainWindow.focus()
     }
   })
+}
+
+function installImageAuth() {
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    {
+      urls: [
+        'https://raw.githubusercontent.com/*',
+        'https://media.githubusercontent.com/*',
+      ],
+    },
+    (details, callback) => {
+      const token = getToken()
+      if (token) details.requestHeaders.Authorization = `Bearer ${token}`
+      callback({ requestHeaders: details.requestHeaders })
+    },
+  )
 }
 
 function createWindow() {
@@ -292,6 +308,7 @@ if (!gotLock) {
     } catch (err) {
       console.error('Failed to apply proxy configuration:', err)
     }
+    installImageAuth()
     app.on('web-contents-created', (_event, contents) => {
       if (contents.session !== session.defaultSession) {
         void applyProxyToSession(contents.session).catch(() => {
