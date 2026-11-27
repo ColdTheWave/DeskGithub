@@ -134,7 +134,10 @@ deskgithub/
 ## Buy Me a Coffee
 
 如果这个项目对你有帮助，欢迎请我喝杯咖啡 ☕
-![Buy Me a Coffee](qr-code.jpg)
+
+<p align="center">
+  <img src="./qr-code.jpg" alt="收款码" width="420">
+</p>
 
 
 ## 许可证
